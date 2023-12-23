@@ -54,38 +54,18 @@
       <v-divider></v-divider>
         <v-row align="center" class="items px-2 py-1">
           <v-col cols="6">
-            <v-autocomplete
-              dense
-              clearable
-              auto-select-first
-              outlined
-              color="primary"
-              :label="frappe._('Sales Person')"
-              v-model="sales_person"
-              :items="sales_persons"
-              item-text="sales_person_name"
-              item-value="name"
-              background-color="white"
-              :no-data-text="__('Sales Person not found')"
-              hide-details
-              :filter="salesPersonFilter"
-              :disabled="readonly"
-            >
-              <template v-slot:item="data">
-                <template>
-                  <v-list-item-content>
-                    <v-list-item-title
-                      class="primary--text subtitle-1"
-                      v-html="data.item.sales_person_name"
-                    ></v-list-item-title>
-                    <v-list-item-subtitle
-                      v-if="data.item.sales_person_name != data.item.name"
-                      v-html="`ID: ${data.item.name}`"
-                    ></v-list-item-subtitle>
-                  </v-list-item-content>
-                </template>
-              </template>
-            </v-autocomplete>
+            
+         
+    <v-select
+      v-model="selectedSalesperson"
+      :items="salespersons"
+      item-text="sales_person_name"
+      item-value="sales_person"
+      label="Select Salesperson"
+      @click="fetchSalespersons"
+    ></v-select>
+
+
           </v-col>
         </v-row>
       <v-row
@@ -794,6 +774,8 @@ import Customer from './Customer.vue';
 export default {
   data() {
     return {
+      selectedSalesperson: null,
+      salespersons: [],
       pos_profile: '',
       pos_opening_shift: '',
       stock_settings: '',
@@ -845,6 +827,7 @@ export default {
   },
 
   computed: {
+    
     total_qty() {
       this.close_payments();
       let qty = 0;
@@ -880,6 +863,24 @@ export default {
   },
 
   methods: {
+    fetchSalespersons() {
+      frappe.call({
+        method: 'posawesome.posawesome.api.sales_person.get_salespersons',
+        args: {
+          doctype: 'Sales Person',
+          fields: ['name as sales_person', 'sales_person_name'],
+        },
+        callback: (response) => {
+          // Update salespersons in the component state
+          this.salespersons = response.message;
+        },
+        error: (error) => {
+          console.error('Error fetching salespersons:', error);
+        },
+      });
+    },
+    
+
     remove_item(item) {
       const index = this.items.findIndex(
         (el) => el.posa_row_id == item.posa_row_id
@@ -1141,6 +1142,7 @@ export default {
       doc.posa_delivery_charges = this.selcted_delivery_charges.name;
       doc.posa_delivery_charges_rate = this.delivery_charges_rate || 0;
       doc.posting_date = this.posting_date;
+      doc.sales_person=this.selectedSalesperson;
       return doc;
     },
 

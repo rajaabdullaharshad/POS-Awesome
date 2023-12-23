@@ -425,7 +425,8 @@ def update_invoice(data):
         if invoice_doc.get("taxes"):
             for tax in invoice_doc.taxes:
                 tax.included_in_print_rate = 1
-
+    for sales in invoice_doc.sales_team:
+        sales.sales_person=data.get("sales_person")
     invoice_doc.save()
     return invoice_doc
 
