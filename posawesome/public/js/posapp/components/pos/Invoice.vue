@@ -51,7 +51,43 @@
           ></v-select>
         </v-col>
       </v-row>
-
+      <v-divider></v-divider>
+        <v-row align="center" class="items px-2 py-1">
+          <v-col cols="6">
+            <v-autocomplete
+              dense
+              clearable
+              auto-select-first
+              outlined
+              color="primary"
+              :label="frappe._('Sales Person')"
+              v-model="sales_person"
+              :items="sales_persons"
+              item-text="sales_person_name"
+              item-value="name"
+              background-color="white"
+              :no-data-text="__('Sales Person not found')"
+              hide-details
+              :filter="salesPersonFilter"
+              :disabled="readonly"
+            >
+              <template v-slot:item="data">
+                <template>
+                  <v-list-item-content>
+                    <v-list-item-title
+                      class="primary--text subtitle-1"
+                      v-html="data.item.sales_person_name"
+                    ></v-list-item-title>
+                    <v-list-item-subtitle
+                      v-if="data.item.sales_person_name != data.item.name"
+                      v-html="`ID: ${data.item.name}`"
+                    ></v-list-item-subtitle>
+                  </v-list-item-content>
+                </template>
+              </template>
+            </v-autocomplete>
+          </v-col>
+        </v-row>
       <v-row
         align="center"
         class="items px-2 py-1 mt-0 pt-0"
