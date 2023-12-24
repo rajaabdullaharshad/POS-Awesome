@@ -381,7 +381,7 @@ def get_sales_person_names():
 @frappe.whitelist()
 def update_invoice(data):
     data = json.loads(data)
-    frappe.msgprint(data.get("sales_person"))
+   
     if data.get("name"):
         invoice_doc = frappe.get_doc("Sales Invoice", data.get("name"))
         invoice_doc.update(data)

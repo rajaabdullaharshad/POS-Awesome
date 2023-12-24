@@ -43,15 +43,22 @@ def get_data(filters):
     sales_invoices = frappe.get_all(
         "Sales Invoice",
         filters=filters,
-        fields=["*"]
+        fields=["name", "customer", "grand_total"],
     )
 
     for invoice in sales_invoices:
-        if invoice.get("sales_team") and any(sales_person.get("sales_person") for sales_person in invoice.sales_team):
-            for sales_person in invoice.sales_team:
-                if sales_person.get("sales_person"):
+        sales_team_entries = frappe.get_all(
+            "Sales Team",
+            filters={"parent": invoice.name},
+            fields=["sales_person", "allocated_percentage"],
+        )
+
+        if sales_team_entries and any(entry.get("sales_person") for entry in sales_team_entries):
+            for entry in sales_team_entries:
+                if entry.get("sales_person"):
                     data.append({
-                        "sales_person": sales_person.sales_person,
+                        "sales_person": entry.sales_person,
+                        "allocated_percentage": entry.allocated_percentage,
                         "sales_invoice": invoice.name,
                         "customer": invoice.customer,
                         "grand_total": invoice.grand_total,
