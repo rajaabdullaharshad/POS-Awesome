@@ -381,6 +381,7 @@ def get_sales_person_names():
 @frappe.whitelist()
 def update_invoice(data):
     data = json.loads(data)
+    frappe.msgprint(data.get("sales_person"))
     if data.get("name"):
         invoice_doc = frappe.get_doc("Sales Invoice", data.get("name"))
         invoice_doc.update(data)
@@ -425,9 +426,24 @@ def update_invoice(data):
         if invoice_doc.get("taxes"):
             for tax in invoice_doc.taxes:
                 tax.included_in_print_rate = 1
-    if data.get("taxes"):
+    if data.get("sales_person"):
+        total_percentage = 0
+
+        if not invoice_doc.get("sales_team"):
+            # If sales_team is empty, create a new list to hold sales team entries
+            invoice_doc.sales_team = []
+        
+        # Calculate the total allocated percentage
         for sales in invoice_doc.sales_team:
-            sales.sales_person=data.get("sales_person")
+            total_percentage += sales.get("allocated_percentage", 0)
+
+        # Append a new sales team entry
+        invoice_doc.append("sales_team", {
+            "sales_person": data.get("sales_person"),
+            "allocated_percentage": 100 - total_percentage,  # Adjust the percentage
+            # Add other relevant fields if needed
+        })
+
     invoice_doc.save()
     return invoice_doc
 
